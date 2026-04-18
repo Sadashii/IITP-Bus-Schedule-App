@@ -30,7 +30,7 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="com.example.iitpbusschedule.ACTION_AUTO_UPDATE" />
+                <action android:name="com.sadashii.iitpbus.ACTION_AUTO_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"

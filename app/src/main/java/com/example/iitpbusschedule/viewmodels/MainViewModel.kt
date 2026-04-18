@@ -34,7 +34,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     var selectedBuses by mutableStateOf(setOf<String>())
     var selectedRoutes by mutableStateOf(setOf<String>())
     var showFilterModal by mutableStateOf(false)
-    var highlightedTripId by mutableStateOf<String?>(null)
+
 
     init {
         refreshSchedule()
@@ -65,15 +65,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun skipLoading() {
-        viewModelScope.launch {
-            val cached = repository.getCachedSchedule()
-            if (cached.trips.isNotEmpty()) {
-                allTrips = cached.trips
-                isLive = cached.isLive
-                lastUpdated = cached.lastUpdated
-                isLoading = false
-                errorMessage = null
-            }
+        val cached = repository.getCachedSchedule()
+        if (cached.trips.isNotEmpty()) {
+            allTrips = cached.trips
+            isLive = cached.isLive
+            lastUpdated = cached.lastUpdated
+            isLoading = false
+            errorMessage = null
         }
     }
 
@@ -97,12 +95,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         selectedRoutes = emptySet()
     }
 
+    private val currentTabTrips: List<BusTrip>
+        get() = allTrips.filter { it.isWeekend == (selectedTab == 1) }
+
     val availableBuses: List<String>
-        get() = allTrips.map { it.busName }.distinct().sorted()
+        get() = currentTabTrips.map { it.busName }.distinct().sorted()
 
     val availableRoutes: List<String>
         get() {
-            val routeCounts = allTrips.groupingBy { "${it.from} → ${it.to}" }.eachCount()
+            val routeCounts = currentTabTrips.groupingBy { "${it.from} → ${it.to}" }.eachCount()
             return routeCounts.entries
                 .sortedWith(compareByDescending<Map.Entry<String, Int>> { it.value }.thenBy { it.key })
                 .map { it.key }

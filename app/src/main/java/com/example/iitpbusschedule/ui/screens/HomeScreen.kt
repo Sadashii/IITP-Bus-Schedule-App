@@ -66,19 +66,11 @@ fun HomeScreen(viewModel: MainViewModel) {
         }
     }
 
-    // Auto-Scroll to Highlighted Trip (from Widget)
-    LaunchedEffect(viewModel.highlightedTripId, listItems) {
-        if (viewModel.highlightedTripId != null && listItems.isNotEmpty()) {
-            val idx = listItems.indexOfFirst { it is BusTrip && "${it.departureTime}-${it.from}-${it.to}-${it.busName}" == viewModel.highlightedTripId }
-            if (idx != -1) {
-                listState.animateScrollToItem(idx)
-            }
-        }
-    }
+    // Auto-Scroll to Highlighted Trip (from Widget) removed 
 
     // Auto-Scroll on Launch
     LaunchedEffect(listItems, viewModel.settingsManager.enableAutoScroll.value) {
-        if (viewModel.settingsManager.enableAutoScroll.value && listItems.isNotEmpty() && viewModel.highlightedTripId == null) {
+        if (viewModel.settingsManager.enableAutoScroll.value && listItems.isNotEmpty()) {
             if (targetIndex != -1) {
                 listState.scrollToItem(targetIndex)
             }
@@ -150,15 +142,12 @@ fun HomeScreen(viewModel: MainViewModel) {
                                 }
                             } else {
                                 items(listItems.size) { index ->
+                                    val item = listItems[index]
                                     if (item is Int) {
                                         HourHeader(item, viewModel.settingsManager.use12Hour.value)
                                     } else if (item is BusTrip) {
-                                        val tripId = "${item.departureTime}-${item.from}-${item.to}-${item.busName}"
-                                        val isHighlighted = tripId == viewModel.highlightedTripId
-                                        
                                         TripCard(
                                             trip = item,
-                                            highlighted = isHighlighted,
                                             currentMinutes = currentMinutes,
                                             settings = viewModel.settingsManager
                                         )

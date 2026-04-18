@@ -62,20 +62,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        handleIntent(intent)
         viewModel.refreshSchedule()
-    }
-
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        setIntent(intent)
-        handleIntent(intent)
-    }
-
-    private fun handleIntent(intent: Intent?) {
-        intent?.getStringExtra("EXTRA_HIGHLIGHT_BUS_ID")?.let { id ->
-            viewModel.highlightedTripId = id
-        }
     }
 }
 
@@ -148,7 +135,7 @@ fun OnboardingScreen(onSkip: () -> Unit) {
                 colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.15f), contentColor = Color.White),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Open from stale data", fontSize = 13.sp)
+                Text("Taking too long? Load last updated data.", fontSize = 13.sp)
             }
         }
     }
@@ -228,4 +215,13 @@ fun BusScheduleApp(viewModel: com.example.iitpbusschedule.viewmodels.MainViewMod
 
     if (viewModel.showInfo) AdminInfoDialog(onDismiss = { viewModel.showInfo = false })
     if (viewModel.showFilterModal) com.example.iitpbusschedule.ui.components.FilterModal(viewModel = viewModel, onDismiss = { viewModel.showFilterModal = false })
+
+    // Welcome Onboarding
+    var showWelcome by remember { mutableStateOf(!viewModel.settingsManager.hasSeenOnboarding) }
+    if (showWelcome) {
+        com.example.iitpbusschedule.ui.components.WelcomeModal(onDismiss = { 
+            showWelcome = false
+            viewModel.settingsManager.markOnboardingSeen()
+        })
+    }
 }

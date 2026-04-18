@@ -76,12 +76,6 @@ class BusRemoteViewsFactory(private val context: Context) : RemoteViewsService.R
             views.setTextColor(R.id.item_text, 0xFFFFFFFF.toInt())
         }
 
-        // Deep link fill-in intent
-        val tripId = "${trip.departureTime}-${trip.from}-${trip.to}-${trip.busName}"
-        val fillInIntent = Intent().apply {
-            putExtra("EXTRA_HIGHLIGHT_BUS_ID", tripId)
-        }
-        views.setOnClickFillInIntent(R.id.item_text, fillInIntent)
 
         return views
     }

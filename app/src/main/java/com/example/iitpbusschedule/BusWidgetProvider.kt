@@ -14,8 +14,8 @@ import java.util.TimeZone
 
 class BusWidgetProvider : AppWidgetProvider() {
     companion object {
-        const val ACTION_REFRESH = "com.example.iitpbusschedule.ACTION_REFRESH"
-        const val ACTION_AUTO_UPDATE = "com.example.iitpbusschedule.ACTION_AUTO_UPDATE"
+        const val ACTION_REFRESH = "com.sadashii.iitpbus.ACTION_REFRESH"
+        const val ACTION_AUTO_UPDATE = "com.sadashii.iitpbus.ACTION_AUTO_UPDATE"
 
         fun triggerUpdate(context: Context) {
             val intent = Intent(context, BusWidgetProvider::class.java).apply {
@@ -113,7 +113,7 @@ internal fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManage
         val mins = diff / (1000 * 60)
         if (mins < 1) "Just now" else "$mins mins ago"
     }
-    views.setTextViewText(R.id.widget_title, "Bus Schedule • updated $timeAgo")
+    views.setTextViewText(R.id.widget_title, "Bus Schedule • Updated $timeAgo")
 
     // 3. Apply Background Styling
     try {
@@ -142,13 +142,7 @@ internal fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManage
     views.setRemoteAdapter(R.id.bus_list, intent)
     views.setEmptyView(R.id.bus_list, R.id.empty_view)
 
-    // 6. Set up Click PendingIntent Template
-    val clickIntent = Intent(context, MainActivity::class.java)
-    val clickPI = PendingIntent.getActivity(
-        context, 0, clickIntent,
-        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-    )
-    views.setPendingIntentTemplate(R.id.bus_list, clickPI)
+
 
     // 7. Force refresh the list
     appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.bus_list)

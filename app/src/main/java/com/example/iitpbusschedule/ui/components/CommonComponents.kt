@@ -12,6 +12,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -80,22 +81,19 @@ fun HourHeader(hour: Int, use12h: Boolean) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TripCard(trip: BusTrip, highlighted: Boolean, currentMinutes: Int, settings: SettingsManager) {
+fun TripCard(trip: BusTrip, currentMinutes: Int, settings: SettingsManager) {
     val context = LocalContext.current
     val isPast = trip.sortKey < currentMinutes
     val routeKey = "${trip.from} → ${trip.to}"
 
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val bgColor = when {
-        highlighted -> if (isDark) Color(0xFF3E3500) else Color(0xFFFFF8E1)
         !settings.showTints.value -> MaterialTheme.colorScheme.surface
         isPast -> if (isDark) Color(0xFF3B1A1A) else Color(0xFFFFEBEE)
         else -> if (isDark) Color(0xFF1A3B1A) else Color(0xFFE8F5E9)
     }
 
     val displayTime = if (settings.use12Hour.value) formatTo12Hour(trip.departureTime) else trip.departureTime
-
-    val borderStroke = if (highlighted) BorderStroke(2.dp, IITPGold) else null
 
     SwipeableActionCard(
         trip = trip,
@@ -107,8 +105,7 @@ fun TripCard(trip: BusTrip, highlighted: Boolean, currentMinutes: Int, settings:
             modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
             shape = RoundedCornerShape(12.dp),
             colors = CardDefaults.cardColors(containerColor = bgColor),
-            elevation = CardDefaults.cardElevation(defaultElevation = if (isDark) 4.dp else 2.dp),
-            border = borderStroke
+            elevation = CardDefaults.cardElevation(defaultElevation = if (isDark) 4.dp else 2.dp)
         ) {
             Row(
                 Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 10.dp),
@@ -353,7 +350,7 @@ fun FilterModal(
             // CATEGORY: BUS
             Text("By Bus", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = TextSecondary)
             Spacer(Modifier.height(8.dp))
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            CustomWrapRow(horizontalGap = 8.dp, verticalGap = 4.dp, modifier = Modifier.fillMaxWidth()) {
                 viewModel.availableBuses.forEach { bus ->
                     val selected = viewModel.selectedBuses.contains(bus)
                     FilterChip(
@@ -370,7 +367,7 @@ fun FilterModal(
             // CATEGORY: ROUTE
             Text("By Route", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = TextSecondary)
             Spacer(Modifier.height(8.dp))
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            CustomWrapRow(horizontalGap = 8.dp, verticalGap = 4.dp, modifier = Modifier.fillMaxWidth()) {
                 viewModel.availableRoutes.forEach { route ->
                     val selected = viewModel.selectedRoutes.contains(route)
                     FilterChip(
@@ -400,6 +397,43 @@ fun FeatureItem(icon: androidx.compose.ui.graphics.vector.ImageVector, title: St
             Text(desc, fontSize = 12.sp, color = TextSecondary, lineHeight = 18.sp)
         }
     }
+}
+
+@Composable
+fun WelcomeModal(onDismiss: () -> Unit) {
+    val context = LocalContext.current
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                "Welcome to IITP Bus! \uD83D\uDE8C",
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp,
+                color = IITPBlue
+            )
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Get started with these premium features:", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+                Spacer(Modifier.height(4.dp))
+                FeatureItem(icon = Icons.Default.Dashboard, title = "Home Widgets", desc = "Check the schedule right from your home screen.")
+                FeatureItem(icon = Icons.Default.CompareArrows, title = "Swipe Actions", desc = "Swipe on trips to set alarms or copy information instantly.")
+                FeatureItem(icon = Icons.Default.FilterList, title = "Smart Filters", desc = "Drill down to the exact bus route you need.")
+                Spacer(Modifier.height(4.dp))
+                Text("Find more customization in the Settings menu!", fontSize = 12.sp, color = TextSecondary)
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { performHaptic(context); onDismiss() },
+                colors = ButtonDefaults.buttonColors(containerColor = IITPBlue)
+            ) {
+                Text("Let's Go", color = Color.White)
+            }
+        },
+        shape = RoundedCornerShape(16.dp),
+        containerColor = MaterialTheme.colorScheme.surface
+    )
 }
 
 
@@ -473,6 +507,66 @@ fun ShimmerTripItem() {
             Box(modifier = Modifier.fillMaxWidth(0.6f).height(20.dp).clip(RoundedCornerShape(4.dp)).shimmerEffect())
             Spacer(Modifier.height(8.dp))
             Box(modifier = Modifier.fillMaxWidth(0.4f).height(14.dp).clip(RoundedCornerShape(4.dp)).shimmerEffect())
+        }
+    }
+}
+
+@Composable
+fun CustomWrapRow(
+    modifier: Modifier = Modifier,
+    horizontalGap: androidx.compose.ui.unit.Dp = 8.dp,
+    verticalGap: androidx.compose.ui.unit.Dp = 8.dp,
+    content: @Composable () -> Unit
+) {
+    androidx.compose.ui.layout.Layout(
+        content = content,
+        modifier = modifier
+    ) { measurables, constraints ->
+        val itemConstraints = constraints.copy(minWidth = 0)
+        val placeables = measurables.map { it.measure(itemConstraints) }
+        
+        val rows = mutableListOf<List<androidx.compose.ui.layout.Placeable>>()
+        val rowHeights = mutableListOf<Int>()
+        var currentRow = mutableListOf<androidx.compose.ui.layout.Placeable>()
+        var currentX = 0
+        var currentY = 0
+        var currentRowHeight = 0
+        var maxWidth = 0
+        
+        val hGap = horizontalGap.roundToPx()
+        val vGap = verticalGap.roundToPx()
+
+        for (placeable in placeables) {
+            if (currentRow.isNotEmpty() && currentX + placeable.width > constraints.maxWidth) {
+                rows.add(currentRow)
+                rowHeights.add(currentRowHeight)
+                maxWidth = maxOf(maxWidth, currentX - hGap)
+                currentX = 0
+                currentY += currentRowHeight + vGap
+                currentRowHeight = 0
+                currentRow = mutableListOf()
+            }
+            currentRow.add(placeable)
+            currentX += placeable.width + hGap
+            currentRowHeight = maxOf(currentRowHeight, placeable.height)
+        }
+        if (currentRow.isNotEmpty()) {
+            rows.add(currentRow)
+            rowHeights.add(currentRowHeight)
+            maxWidth = maxOf(maxWidth, currentX - hGap)
+            currentY += currentRowHeight
+        }
+        
+        layout(width = maxOf(maxWidth, constraints.minWidth), height = maxOf(currentY, constraints.minHeight)) {
+            var y = 0
+            rows.forEachIndexed { i, row ->
+                var x = 0
+                row.forEach { placeable ->
+                    placeable.placeRelative(x, y)
+                    x += placeable.width + hGap
+                }
+                y += rowHeights[i] + vGap
+            }
         }
     }
 }
