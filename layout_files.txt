@@ -1,0 +1,2 @@
+C:\Users\tanis\AndroidStudioProjects\iitpbusschedule\app\src\main\res\layout\widget_bus.xml
+C:\Users\tanis\AndroidStudioProjects\iitpbusschedule\app\src\main\res\layout\widget_item.xml
