@@ -8,7 +8,7 @@ fun performHaptic(context: Context) {
     try {
         val prefs = context.getSharedPreferences("bus_prefs", Context.MODE_PRIVATE)
         if (!prefs.getBoolean("enable_haptic", true)) return
-        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator ?: return
+        val vibrator = context.getSystemService(Vibrator::class.java) ?: return
         vibrator.vibrate(VibrationEffect.createOneShot(30, VibrationEffect.DEFAULT_AMPLITUDE))
     } catch (_: Exception) {}
 }

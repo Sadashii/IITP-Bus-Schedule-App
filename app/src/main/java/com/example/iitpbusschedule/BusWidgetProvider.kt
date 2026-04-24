@@ -39,7 +39,7 @@ class BusWidgetProvider : AppWidgetProvider() {
                 val appWidgetManager = AppWidgetManager.getInstance(context)
                 val appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
                 if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-                    appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.bus_list)
+                    appWidgetManager.notifyAppWidgetViewDataChanged(intArrayOf(appWidgetId), R.id.bus_list)
                     updateAppWidget(context, appWidgetManager, appWidgetId)
                 }
             }
@@ -48,7 +48,7 @@ class BusWidgetProvider : AppWidgetProvider() {
                 val cn = ComponentName(context, BusWidgetProvider::class.java)
                 val ids = appWidgetManager.getAppWidgetIds(cn)
                 for (id in ids) {
-                    appWidgetManager.notifyAppWidgetViewDataChanged(id, R.id.bus_list)
+                    appWidgetManager.notifyAppWidgetViewDataChanged(intArrayOf(id), R.id.bus_list)
                     updateAppWidget(context, appWidgetManager, id)
                 }
                 scheduleMinuteAlarm(context) // Re-schedule for the next minute
@@ -139,13 +139,14 @@ internal fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManage
         putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
         data = android.net.Uri.parse(toUri(Intent.URI_INTENT_SCHEME))
     }
+    @Suppress("DEPRECATION")
     views.setRemoteAdapter(R.id.bus_list, intent)
     views.setEmptyView(R.id.bus_list, R.id.empty_view)
 
 
 
     // 7. Force refresh the list
-    appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.bus_list)
+    appWidgetManager.notifyAppWidgetViewDataChanged(intArrayOf(appWidgetId), R.id.bus_list)
 
     appWidgetManager.updateAppWidget(appWidgetId, views)
 }

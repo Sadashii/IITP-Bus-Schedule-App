@@ -42,6 +42,7 @@ import com.example.iitpbusschedule.performHaptic
 import com.example.iitpbusschedule.utils.AlarmHelper
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.material.icons.automirrored.filled.CompareArrows
 import androidx.compose.material.icons.filled.NotificationsActive
 
 // Constants from MainActivity
@@ -446,7 +447,7 @@ fun WelcomeModal(onDismiss: () -> Unit) {
                 Spacer(Modifier.height(4.dp))
                 FeatureItem(icon = Icons.Default.Dashboard, title = "Home Widgets", desc = "Check the schedule right from your home screen.")
                 FeatureItem(icon = Icons.Default.NotificationsActive, title = "Bus Reminders", desc = "Set alarms for your bus and never miss a trip again!")
-                FeatureItem(icon = Icons.Default.CompareArrows, title = "Swipe Actions", desc = "Swipe on trips to call the driver or share information instantly.")
+                FeatureItem(icon = Icons.AutoMirrored.Filled.CompareArrows, title = "Swipe Actions", desc = "Swipe on trips to call the driver or share information instantly.")
                 FeatureItem(icon = Icons.Default.FilterList, title = "Smart Filters", desc = "Drill down to the exact bus route you need.")
                 Spacer(Modifier.height(4.dp))
                 Text("Find more customization in the Settings menu!", fontSize = 12.sp, color = TextSecondary)

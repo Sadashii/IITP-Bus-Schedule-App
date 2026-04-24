@@ -11,7 +11,7 @@ import java.net.URL
 import javax.inject.Inject
 
 class BusRepository @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val busDao: BusDao
 ) {
     private val sheetUrl = "https://docs.google.com/spreadsheets/d/1p0WTx2O5rUEatdvpVtoQwnPEhv86_nZf5F-LMPwEe_s/export?format=csv&gid=0"
