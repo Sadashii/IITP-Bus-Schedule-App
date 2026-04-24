@@ -15,12 +15,12 @@ kotlin {
 
 android {
     namespace = "com.example.iitpbusschedule"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.sadashii.iitpbus"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 2
         versionName = "1.1.0"
 
@@ -85,4 +85,10 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+}
+
+tasks.configureEach {
+    if (name.contains("produce") && name.contains("BundleIdeListingFile")) {
+        enabled = false
+    }
 }
