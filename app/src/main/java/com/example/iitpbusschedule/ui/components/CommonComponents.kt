@@ -39,6 +39,10 @@ import com.example.iitpbusschedule.data.AdminContact
 import com.example.iitpbusschedule.data.BusTrip
 import com.example.iitpbusschedule.repository.SettingsManager
 import com.example.iitpbusschedule.performHaptic
+import com.example.iitpbusschedule.utils.AlarmHelper
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.material.icons.filled.NotificationsActive
 
 // Constants from MainActivity
 val IITPBlue   = Color(0xFF1A3A6B)
@@ -47,9 +51,22 @@ val DividerClr = Color(0xFFE0E6EF)
 val TextPrimary   = Color(0xFF1C1C1E)
 val TextSecondary = Color(0xFF6B7280)
 
-val ChipFromBg   = IITPBlue
-val ChipToBg     = Color(0xFF2E7D32)
 val ChipTextClr  = Color.White
+
+fun getPlaceColor(place: String): Color {
+    val p = place.lowercase()
+    return when {
+        p.contains("aryabhatta") -> Color(0xFF1A3A6B) // IITP Blue
+        p.contains("tutorial")   -> Color(0xFF2E7D32) // Green
+        p.contains("quarter")    -> Color(0xFFBF360C) // Deep Orange
+        p.contains("patna")      -> Color(0xFF4527A0) // Deep Purple
+        p.contains("bihta")      -> Color(0xFF004D40) // Teal
+        p.contains("gate")       -> Color(0xFF37474F) // Blue Grey
+        p.contains("admin")      -> Color(0xFFB71C1C) // Red
+        p.contains("hostel")     -> Color(0xFF1565C0) // Blue
+        else                     -> Color(0xFF546E7A) // Default Blue Grey
+    }
+}
 
 val adminContacts = listOf(
     AdminContact("Mantu Ji", "Admin Staff", "+91 8986162721"),
@@ -79,7 +96,7 @@ fun HourHeader(hour: Int, use12h: Boolean) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun TripCard(trip: BusTrip, currentMinutes: Int, settings: SettingsManager) {
     val context = LocalContext.current
@@ -102,7 +119,16 @@ fun TripCard(trip: BusTrip, currentMinutes: Int, settings: SettingsManager) {
         settings = settings
     ) {
         Card(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 4.dp)
+                .combinedClickable(
+                    onClick = { /* Could show details or nothing */ },
+                    onLongClick = {
+                        AlarmHelper.scheduleAlarm(context, trip)
+                        performHaptic(context)
+                    }
+                ),
             shape = RoundedCornerShape(12.dp),
             colors = CardDefaults.cardColors(containerColor = bgColor),
             elevation = CardDefaults.cardElevation(defaultElevation = if (isDark) 4.dp else 2.dp)
@@ -130,9 +156,9 @@ fun TripCard(trip: BusTrip, currentMinutes: Int, settings: SettingsManager) {
                 Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        RouteChip(trip.from, ChipFromBg, ChipTextClr)
+                        RouteChip(trip.from, getPlaceColor(trip.from), ChipTextClr)
                         Text("→", fontSize = 12.sp, color = if (isDark) Color(0xFFAAAAAA) else TextSecondary)
-                        RouteChip(trip.to, ChipToBg, ChipTextClr)
+                        RouteChip(trip.to, getPlaceColor(trip.to), ChipTextClr)
                     }
                     Spacer(Modifier.height(4.dp))
                     Text(
@@ -144,6 +170,8 @@ fun TripCard(trip: BusTrip, currentMinutes: Int, settings: SettingsManager) {
         }
     }
 }
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -417,7 +445,8 @@ fun WelcomeModal(onDismiss: () -> Unit) {
                 Text("Get started with these premium features:", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
                 Spacer(Modifier.height(4.dp))
                 FeatureItem(icon = Icons.Default.Dashboard, title = "Home Widgets", desc = "Check the schedule right from your home screen.")
-                FeatureItem(icon = Icons.Default.CompareArrows, title = "Swipe Actions", desc = "Swipe on trips to set alarms or copy information instantly.")
+                FeatureItem(icon = Icons.Default.NotificationsActive, title = "Bus Reminders", desc = "Set alarms for your bus and never miss a trip again!")
+                FeatureItem(icon = Icons.Default.CompareArrows, title = "Swipe Actions", desc = "Swipe on trips to call the driver or share information instantly.")
                 FeatureItem(icon = Icons.Default.FilterList, title = "Smart Filters", desc = "Drill down to the exact bus route you need.")
                 Spacer(Modifier.height(4.dp))
                 Text("Find more customization in the Settings menu!", fontSize = 12.sp, color = TextSecondary)

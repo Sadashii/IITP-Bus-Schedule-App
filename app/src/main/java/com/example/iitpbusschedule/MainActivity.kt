@@ -38,9 +38,12 @@ import com.example.iitpbusschedule.ui.components.openSheet
 import com.example.iitpbusschedule.ui.screens.HomeScreen
 import com.example.iitpbusschedule.ui.screens.SettingsScreen
 import com.example.iitpbusschedule.viewmodels.MainViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import java.util.concurrent.TimeUnit
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
     private val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {

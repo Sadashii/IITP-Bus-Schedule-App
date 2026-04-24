@@ -23,15 +23,21 @@ class BusRemoteViewsFactory(private val context: Context) : RemoteViewsService.R
     override fun onCreate() {}
 
     override fun onDataSetChanged() {
-        val cachePrefs = context.getSharedPreferences("bus_cache", Context.MODE_PRIVATE)
         val settingsPrefs = context.getSharedPreferences("bus_prefs", Context.MODE_PRIVATE)
-
-        val csvData = cachePrefs.getString("cached_csv", "") ?: ""
         val scrollBuffer = settingsPrefs.getInt("scroll_buffer", 10)
         use12h = settingsPrefs.getBoolean("use_12h", false)
         showTints = settingsPrefs.getBoolean("show_tints", true)
 
-        val allTrips = BusParser.parseCsv(csvData)
+        val database = androidx.room.Room.databaseBuilder(
+            context,
+            com.example.iitpbusschedule.data.BusDatabase::class.java,
+            "bus_database"
+        ).build()
+        val busDao = database.busDao()
+
+        val allTrips = kotlinx.coroutines.runBlocking {
+            busDao.getAllTripsOneShot()
+        }
 
         val cal = Calendar.getInstance(TimeZone.getTimeZone("Asia/Kolkata"))
         val currentMinutes = cal.get(Calendar.HOUR_OF_DAY) * 60 + cal.get(Calendar.MINUTE)
@@ -41,6 +47,7 @@ class BusRemoteViewsFactory(private val context: Context) : RemoteViewsService.R
         trips = allTrips.filter { it.isWeekend == isTodayWeekend && it.sortKey >= targetTime }
             .sortedBy { it.sortKey }
     }
+
 
     override fun onDestroy() {
         trips = emptyList()

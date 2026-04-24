@@ -1,21 +1,28 @@
 package com.example.iitpbusschedule.viewmodels
 
-import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.AndroidViewModel
+import android.content.Context
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.iitpbusschedule.data.BusTrip
 import com.example.iitpbusschedule.repository.BusRepository
 import com.example.iitpbusschedule.repository.SettingsManager
 import com.example.iitpbusschedule.BusWidgetProvider
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class MainViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = BusRepository(application)
-    val settingsManager = SettingsManager(application)
+@HiltViewModel
+class MainViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val repository: BusRepository,
+    val settingsManager: SettingsManager
+) : ViewModel() {
+
 
     // UI State
     var allTrips by mutableStateOf<List<BusTrip>>(emptyList())
@@ -37,13 +44,30 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
 
     init {
+        // First load whatever we have in cache to show it instantly
+        viewModelScope.launch {
+            val cached = repository.getCachedSchedule()
+            if (cached.trips.isNotEmpty()) {
+                allTrips = cached.trips
+                isLive = cached.isLive
+                lastUpdated = cached.lastUpdated
+                isLoading = false // Data is available, skip the main loading screen
+            }
+        }
+        
+        // Then start background refresh
         refreshSchedule()
     }
 
-    fun refreshSchedule() {
+    fun refreshSchedule(isManual: Boolean = false) {
         viewModelScope.launch {
-            if (allTrips.isEmpty()) isLoading = true
-            else isRefreshing = true
+            // If we already have data (from cache), don't show the full-screen loader
+            // Only show the refresh indicator if it's a manual refresh
+            if (allTrips.isEmpty()) {
+                isLoading = true
+            } else if (isManual) {
+                isRefreshing = true
+            }
 
             try {
                 val result = repository.getSchedule()
@@ -52,8 +76,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 lastUpdated = result.lastUpdated
                 errorMessage = null
                 // Notify widget that data has been refreshed
-                BusWidgetProvider.triggerUpdate(getApplication())
+                BusWidgetProvider.triggerUpdate(context)
             } catch (e: Exception) {
+                // If we already have cached data, don't show error message as a full screen error
                 if (allTrips.isEmpty()) {
                     errorMessage = e.message
                 }
@@ -65,13 +90,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun skipLoading() {
-        val cached = repository.getCachedSchedule()
-        if (cached.trips.isNotEmpty()) {
-            allTrips = cached.trips
-            isLive = cached.isLive
-            lastUpdated = cached.lastUpdated
-            isLoading = false
-            errorMessage = null
+        viewModelScope.launch {
+            val cached = repository.getCachedSchedule()
+            if (cached.trips.isNotEmpty()) {
+                allTrips = cached.trips
+                isLive = cached.isLive
+                lastUpdated = cached.lastUpdated
+                isLoading = false
+                errorMessage = null
+            }
         }
     }
 

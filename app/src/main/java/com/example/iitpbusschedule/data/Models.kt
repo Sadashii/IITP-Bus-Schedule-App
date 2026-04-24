@@ -1,6 +1,11 @@
 package com.example.iitpbusschedule.data
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "bus_trips")
 data class BusTrip(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val departureTime: String,
     val from: String,
     val to: String,

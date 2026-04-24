@@ -125,7 +125,7 @@ fun HomeScreen(viewModel: MainViewModel) {
                 else -> {
                     PullToRefreshBox(
                         isRefreshing = viewModel.isRefreshing,
-                        onRefresh = { viewModel.refreshSchedule(); performHaptic(context) },
+                        onRefresh = { viewModel.refreshSchedule(isManual = true); performHaptic(context) },
                         modifier = Modifier.fillMaxSize()
                     ) {
                         LazyColumn(
